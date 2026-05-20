@@ -45,4 +45,4 @@ cd backend
 Current expected result:
 
 - The Spring Boot app starts far enough to validate JPA mappings
-- The test fails because the schema is still missing required database tables
+- The test fails because a test-only probe entity is missing its database table, which truthfully confirms that schema objects have not been added yet

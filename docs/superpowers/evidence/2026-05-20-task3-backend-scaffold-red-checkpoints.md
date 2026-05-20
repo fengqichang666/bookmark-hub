@@ -14,7 +14,7 @@ This note records the actual Task 3 progression for the backend scaffold under `
   - The Task 3 plan expected an early failure before datasource and Flyway configuration were added
   - That expected red state did not occur because the generated skeleton auto-configured an in-memory H2 datasource and had no mapped entities that required schema validation
 - Meaningful next checkpoint chosen:
-  - Add the planned base configuration and a minimal mapped entity so the next failure would be an honest schema-validation failure instead of a fabricated setup failure
+  - Add the planned base configuration and a test-only probe entity so the next failure would be an honest schema-validation failure instead of a fabricated setup failure
 
 ## Checkpoint 2: Failure narrowed to missing schema / database objects
 
@@ -26,9 +26,10 @@ This note records the actual Task 3 progression for the backend scaffold under `
 - Interpretation:
   - Base application configuration was accepted
   - Flyway remained enabled
-  - The remaining blocker was the absence of database objects, which is the intended handoff into the later migration task
+  - The remaining blocker was the absence of database objects for the test-only probe table, which is the intended handoff into the later migration task
 
 ## Follow-up alignment
 
 - The initial generated skeleton came from a Spring Initializr response that used Spring Boot `4.0.6`
 - Task 3 was then aligned back to Spring Boot `3.4.13` to match the agreed design and implementation plan
+- The probe was moved into test scope so the production application model remains clean while the Task 3 missing-table checkpoint stays auditable
