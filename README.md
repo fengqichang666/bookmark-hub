@@ -2,17 +2,8 @@
 
 ## Local Development
 
-### Frontend
+Task 1 only includes the current project baseline.
 
-`cd frontend`
-`npm install`
-`npm run dev`
+Frontend and backend scaffolding are not in this workspace yet, so there are no runnable startup commands at this stage.
 
-### Backend
-
-`cd backend`
-`.\mvnw.cmd spring-boot:run`
-
-### Default Accounts
-
-- `admin` / `Admin@123456`
+Those setup and run instructions will be added in later tasks after the corresponding code exists.

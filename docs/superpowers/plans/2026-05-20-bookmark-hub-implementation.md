@@ -77,28 +77,32 @@
 - Create: `D:\workspace\bookmark-hub\.gitignore`
 - Create: `D:\workspace\bookmark-hub\README.md`
 
-- [ ] **Step 1: Install missing runtime dependencies**
+Status: Completed in the current workspace on `2026-05-20`.
+
+- [x] **Step 1: Install required runtime dependencies**
 
 ```powershell
 winget install --id EclipseAdoptium.Temurin.21.JDK -e --accept-package-agreements --accept-source-agreements
 winget install --id Oracle.MySQL -e --accept-package-agreements --accept-source-agreements
 ```
 
-- [ ] **Step 2: Verify the installed runtimes**
+- [x] **Step 2: Verify the installed runtimes**
 
 Run:
 
 ```powershell
-java -version
-mysql --version
+$java = Get-ChildItem 'C:\Program Files\Eclipse Adoptium' -Recurse -Filter java.exe | Select-Object -First 1 -ExpandProperty FullName
+$mysql = Get-ChildItem 'C:\Program Files\MySQL' -Recurse -Filter mysql.exe | Select-Object -First 1 -ExpandProperty FullName
+& $java -version
+& $mysql --version
 ```
 
 Expected:
 
-- `java -version` prints a Temurin 21 build
-- `mysql --version` prints a MySQL 8 client version
+- The Java version command prints a Temurin 21 build
+- The MySQL version command prints a MySQL 8 client version
 
-- [ ] **Step 3: Initialize git and add the root ignore file**
+- [x] **Step 3: Initialize git and add the root ignore file**
 
 ```powershell
 git init
@@ -116,30 +120,21 @@ backend/target/
 '@ | Set-Content -Path 'D:\workspace\bookmark-hub\.gitignore'
 ```
 
-- [ ] **Step 4: Add the root README with local startup commands**
+- [x] **Step 4: Add the root README with a truthful workspace baseline note**
 
 ```markdown
 # Bookmark Hub
 
 ## Local Development
 
-### Frontend
+Task 1 only includes the current project baseline.
 
-`cd frontend`
-`npm install`
-`npm run dev`
+Frontend and backend scaffolding are not in this workspace yet, so there are no runnable startup commands at this stage.
 
-### Backend
-
-`cd backend`
-`.\mvnw.cmd spring-boot:run`
-
-### Default Accounts
-
-- `admin` / `Admin@123456`
+Those setup and run instructions will be added in later tasks after the corresponding code exists.
 ```
 
-- [ ] **Step 5: Commit the workspace bootstrap**
+- [x] **Step 5: Commit the workspace bootstrap and follow-up doc alignment**
 
 ```powershell
 git add .gitignore README.md docs/superpowers/specs/2026-05-20-bookmark-hub-design.md docs/superpowers/plans/2026-05-20-bookmark-hub-implementation.md
