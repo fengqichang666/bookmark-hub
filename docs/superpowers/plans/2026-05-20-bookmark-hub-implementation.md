@@ -329,7 +329,7 @@ app:
     secret: ${JWT_SECRET:bookmark-hub-dev-secret-bookmark-hub-dev-secret}
 ```
 
-If the generated skeleton still has no mapped entities after adding configuration, add one minimal temporary probe entity under `com.bookmarkhub.shared` so Hibernate validation can stop on a truthful missing-table failure. Keep a short code comment explaining that the class exists only to surface the scaffold-stage schema-validation checkpoint until real domain entities and migrations arrive.
+If the generated skeleton still has no mapped entities after adding configuration, add one minimal temporary probe entity in test scope so Hibernate validation can stop on a truthful missing-table failure during `BookmarkHubApplicationTests`. Keep it out of production source sets, and document that it exists only to surface the scaffold-stage schema-validation checkpoint until real domain entities and migrations arrive.
 
 - [ ] **Step 5: Re-run the backend tests and verify the remaining failure is the missing schema**
 
