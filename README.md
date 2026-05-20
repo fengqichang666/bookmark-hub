@@ -2,8 +2,31 @@
 
 ## Local Development
 
-Task 1 only includes the current project baseline.
+The frontend scaffold for Task 2 now exists under `frontend/`.
 
-Frontend and backend scaffolding are not in this workspace yet, so there are no runnable startup commands at this stage.
+The backend is not scaffolded yet, so backend startup commands are not available at this stage.
 
-Those setup and run instructions will be added in later tasks after the corresponding code exists.
+### Frontend
+
+Install dependencies:
+
+```bash
+cd frontend
+npm install --no-audit
+```
+
+Start the Vite dev server:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Run the current frontend checks:
+
+```bash
+cd frontend
+npx vitest run src/features/auth/LoginPage.test.tsx
+npm run build
+npm run lint
+```
