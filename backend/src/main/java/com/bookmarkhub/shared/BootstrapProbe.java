@@ -11,6 +11,11 @@ import jakarta.persistence.Table;
 @Table(name = "bootstrap_probe")
 public class BootstrapProbe {
 
+    // Temporary probe entity for Task 3 only.
+    // It forces Hibernate schema validation to fail on a missing table so the
+    // scaffold task can stop at a truthful "missing database objects" checkpoint
+    // before real domain entities and Flyway migrations arrive in later tasks.
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

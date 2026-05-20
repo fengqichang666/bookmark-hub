@@ -269,7 +269,7 @@ git commit -m "feat: scaffold react frontend shell"
 
 ```powershell
 Invoke-WebRequest `
-  -Uri "https://start.spring.io/starter.zip?type=maven-project&language=java&bootVersion=3.4.5&baseDir=backend&groupId=com.bookmarkhub&artifactId=bookmark-hub&name=bookmark-hub&packageName=com.bookmarkhub&packaging=jar&javaVersion=21&dependencies=web,data-jpa,security,validation,lombok,h2,mysql,flyway" `
+  -Uri "https://start.spring.io/starter.zip?type=maven-project&language=java&bootVersion=3.4.13&baseDir=backend&groupId=com.bookmarkhub&artifactId=bookmark-hub&name=bookmark-hub&packageName=com.bookmarkhub&packaging=jar&javaVersion=21&dependencies=web,data-jpa,security,validation,lombok,h2,mysql,flyway" `
   -OutFile "D:\workspace\bookmark-hub\backend.zip"
 Expand-Archive -Path "D:\workspace\bookmark-hub\backend.zip" -DestinationPath "D:\workspace\bookmark-hub" -Force
 Remove-Item "D:\workspace\bookmark-hub\backend.zip"
@@ -303,7 +303,8 @@ cd D:\workspace\bookmark-hub\backend
 
 Expected:
 
-- FAIL because datasource properties and Flyway migrations are not ready yet
+- Preferably FAIL because datasource properties and Flyway migrations are not ready yet.
+- If the generated skeleton passes by auto-configuring in-memory H2 with no mapped entities, record that outcome truthfully and move to the next meaningful failure checkpoint instead of fabricating a failure.
 
 - [ ] **Step 4: Add base application settings for local MySQL and test H2**
 
@@ -327,6 +328,8 @@ app:
   jwt:
     secret: ${JWT_SECRET:bookmark-hub-dev-secret-bookmark-hub-dev-secret}
 ```
+
+If the generated skeleton still has no mapped entities after adding configuration, add one minimal temporary probe entity under `com.bookmarkhub.shared` so Hibernate validation can stop on a truthful missing-table failure. Keep a short code comment explaining that the class exists only to surface the scaffold-stage schema-validation checkpoint until real domain entities and migrations arrive.
 
 - [ ] **Step 5: Re-run the backend tests and verify the remaining failure is the missing schema**
 
