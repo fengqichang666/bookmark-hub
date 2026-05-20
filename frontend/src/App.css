@@ -1,0 +1,27 @@
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-shell__brand {
+  margin: 0;
+  font-size: 22px;
+}
+
+.app-shell__content {
+  padding: 24px;
+}
+
+.auth-card {
+  width: min(420px, 100%);
+  margin: 48px auto 0;
+}
+
+.dashboard-placeholder {
+  max-width: 720px;
+}
