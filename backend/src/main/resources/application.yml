@@ -17,3 +17,8 @@ spring:
   h2:
     console:
       enabled: false
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:bookmark-hub-dev-secret-bookmark-hub-dev-secret}
+    expiration: ${JWT_EXPIRATION:PT12H}

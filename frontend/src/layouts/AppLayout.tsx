@@ -12,7 +12,10 @@ function AppLayout() {
         </Typography.Title>
         <Space size="large">
           <Link to="/">首页</Link>
-          <Link to="/login">登录</Link>
+          <Link to="/bookmarks">书签</Link>
+          <Link to="/categories">分类</Link>
+          <Link to="/members">成员</Link>
+          <Link to="/imports">导入</Link>
         </Space>
       </Header>
       <Content className="app-shell__content">
