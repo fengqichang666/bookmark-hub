@@ -10,42 +10,24 @@ Bookmark Hub is a monorepo with:
 - The backend now includes auth, dashboard, category, bookmark, member, and bookmark HTML import APIs.
 - The frontend now includes login, dashboard, bookmark management, category management, member management, and import pages.
 - Automated backend tests, frontend tests, and frontend production build pass in the current workspace.
-- A real local backend startup still requires a running MySQL 8 instance on `localhost:3306`.
+- The backend now starts locally with the default embedded H2 configuration.
+- MySQL 8 remains available through the `mysql` Spring profile.
 
 ## Prerequisites
 
 - Node.js 20+
 - Java 21
-- MySQL 8
+- MySQL 8 (optional, only when using the `mysql` profile)
 
 ## Local Development
 
-### 1. Prepare the database
+### 1. Start the backend
 
-Create the local database:
-
-```sql
-CREATE DATABASE bookmark_hub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-The backend defaults to:
-
-- database host: `localhost`
-- database name: `bookmark_hub`
-- username: `root`
-- password: `root`
-
-If your local credentials are different, set `DB_USERNAME` and `DB_PASSWORD` before starting the backend.
-
-### 2. Start the backend
-
-PowerShell example:
+The default startup now uses a local H2 file database, so no extra database setup is required:
 
 ```powershell
 $env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot'
 $env:Path="$env:JAVA_HOME\bin;$env:Path"
-$env:DB_USERNAME='root'
-$env:DB_PASSWORD='root'
 
 Set-Location 'D:\workspace\bookmark-hub\backend'
 .\mvnw.cmd spring-boot:run
@@ -59,6 +41,33 @@ Flyway will automatically apply:
 - `V2__seed_admin.sql`
 - `V3__management_tables.sql`
 - `V4__import_records.sql`
+
+### 2. Start the backend with MySQL
+
+If you want to use MySQL 8 instead of the embedded H2 database, first create the local database:
+
+```sql
+CREATE DATABASE bookmark_hub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+The MySQL profile defaults to:
+
+- database host: `localhost`
+- database name: `bookmark_hub`
+- username: `root`
+- password: set `DB_PASSWORD` to your local MySQL password
+
+Set `DB_PASSWORD` before starting the backend with the `mysql` profile. Set `DB_USERNAME` too if your local username is not `root`.
+
+```powershell
+$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot'
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+$env:DB_USERNAME='root'
+$env:DB_PASSWORD='your-local-password'
+
+Set-Location 'D:\workspace\bookmark-hub\backend'
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=mysql
+```
 
 ### 3. Start the frontend
 
