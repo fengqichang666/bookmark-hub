@@ -45,6 +45,13 @@ public class BookmarkService {
         return new PageResponse<>(items);
     }
 
+    public BookmarkDetailResponse detail(String username, Long bookmarkId) {
+        AuthActor actor = authService.requireActor(username);
+        Bookmark bookmark = bookmarkRepository.findByIdAndTeamId(bookmarkId, actor.teamId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bookmark not found"));
+        return toDetail(bookmark);
+    }
+
     public BookmarkDetailResponse create(String username, SaveBookmarkRequest request) {
         AuthActor actor = authService.requireActor(username);
         Category category = requireCategory(actor.teamId(), request.categoryId());

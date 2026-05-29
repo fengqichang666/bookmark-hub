@@ -26,6 +26,11 @@ public class BookmarkController {
         return bookmarkService.list(authentication.getName());
     }
 
+    @GetMapping("/{bookmarkId}")
+    public BookmarkDetailResponse detail(@PathVariable Long bookmarkId, Authentication authentication) {
+        return bookmarkService.detail(authentication.getName(), bookmarkId);
+    }
+
     @PostMapping
     public BookmarkDetailResponse create(@Valid @RequestBody SaveBookmarkRequest request, Authentication authentication) {
         return bookmarkService.create(authentication.getName(), request);

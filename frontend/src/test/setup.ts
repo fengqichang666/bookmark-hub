@@ -17,6 +17,25 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 })
 
+class ResizeObserverMock {
+  observe() {
+    return undefined
+  }
+
+  unobserve() {
+    return undefined
+  }
+
+  disconnect() {
+    return undefined
+  }
+}
+
+Object.defineProperty(window, 'ResizeObserver', {
+  writable: true,
+  value: ResizeObserverMock,
+})
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' })
 })

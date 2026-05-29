@@ -48,4 +48,15 @@ class BookmarkControllerTest extends ApiIntegrationTestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[*].title").isArray());
     }
+
+    @Test
+    void memberCanReadBookmarkDetailForEditing() throws Exception {
+        mockMvc.perform(get("/api/bookmarks/2")
+                        .header("Authorization", bearerTokenFor("member1")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(2))
+                .andExpect(jsonPath("$.title").value("React"))
+                .andExpect(jsonPath("$.description").value("React description"))
+                .andExpect(jsonPath("$.categoryId").value(1));
+    }
 }

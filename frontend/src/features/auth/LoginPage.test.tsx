@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { MemoryRouter } from 'react-router-dom'
 import App from '../../App'
+import { useAuthStore } from './authStore'
 import { server } from '../../test/server'
 import LoginPage from './LoginPage'
 
@@ -54,5 +55,43 @@ describe('LoginPage', () => {
 
     expect(await screen.findByText('书签总数')).toBeInTheDocument()
     expect(screen.getByText('12')).toBeInTheDocument()
+  })
+
+  it('clears the token and returns to the login page on logout', async () => {
+    server.use(
+      http.get(/\/api\/dashboard\/overview$/, async () =>
+        HttpResponse.json({
+          bookmarkCount: 12,
+          categoryCount: 3,
+          memberCount: 2,
+        }),
+      ),
+    )
+
+    window.localStorage.setItem('bookmark-hub-token', 'jwt-token')
+    useAuthStore.setState({
+      token: 'jwt-token',
+      user: {
+        username: 'admin',
+        displayName: 'System Administrator',
+        role: 'ADMIN',
+        teamId: 1,
+      },
+    })
+
+    const user = userEvent.setup()
+
+    render(<App />)
+
+    expect(await screen.findByText('书签总数')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '退出登录' }))
+
+    await waitFor(() => {
+      expect(window.localStorage.getItem('bookmark-hub-token')).toBeNull()
+    })
+
+    expect(await screen.findByLabelText('用户名')).toBeInTheDocument()
+    expect(screen.getByLabelText('密码')).toBeInTheDocument()
   })
 })
