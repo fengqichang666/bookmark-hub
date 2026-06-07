@@ -3,8 +3,22 @@ spring:
     url: jdbc:h2:mem:bookmarkhub;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
-  jpa:
-    hibernate:
-      ddl-auto: validate
   flyway:
+    enabled: true
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+knife4j:
+  enable: true
+
+app:
+  docs:
     enabled: true

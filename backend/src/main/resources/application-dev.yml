@@ -1,0 +1,12 @@
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+knife4j:
+  enable: true
+
+app:
+  docs:
+    enabled: true

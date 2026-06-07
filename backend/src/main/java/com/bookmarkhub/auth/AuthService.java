@@ -1,5 +1,7 @@
 package com.bookmarkhub.auth;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
@@ -14,20 +16,19 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthService {
 
     private static final String ACTIVE_STATUS = "ACTIVE";
-    private static final String ADMIN_ROLE = "ADMIN";
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    private final UserAccountRepository userAccountRepository;
-    private final TeamMemberRepository teamMemberRepository;
+    private final UserAccountMapper userAccountMapper;
+    private final TeamMemberMapper teamMemberMapper;
     private final JwtTokenService jwtTokenService;
 
     public AuthService(
-            UserAccountRepository userAccountRepository,
-            TeamMemberRepository teamMemberRepository,
+            UserAccountMapper userAccountMapper,
+            TeamMemberMapper teamMemberMapper,
             JwtTokenService jwtTokenService
     ) {
-        this.userAccountRepository = userAccountRepository;
-        this.teamMemberRepository = teamMemberRepository;
+        this.userAccountMapper = userAccountMapper;
+        this.teamMemberMapper = teamMemberMapper;
         this.jwtTokenService = jwtTokenService;
     }
 
@@ -50,12 +51,12 @@ public class AuthService {
             return Optional.empty();
         }
 
-        Optional<UserAccount> user = userAccountRepository.findByUsernameAndStatus(username.get(), ACTIVE_STATUS);
+        Optional<UserAccount> user = findActiveUserOptional(username.get());
         if (user.isEmpty()) {
             return Optional.empty();
         }
 
-        Optional<TeamMember> membership = teamMemberRepository.findFirstByUserIdOrderByIdAsc(user.get().getId());
+        Optional<TeamMember> membership = findFirstMembership(user.get().getId());
         if (membership.isEmpty()) {
             return Optional.empty();
         }
@@ -69,7 +70,7 @@ public class AuthService {
 
     public AuthActor requireActor(String username) {
         UserAccount user = findActiveUser(username);
-        TeamMember membership = teamMemberRepository.findFirstByUserIdOrderByIdAsc(user.getId())
+        TeamMember membership = findFirstMembership(user.getId())
                 .orElseThrow(this::invalidCredentials);
         return new AuthActor(user, membership);
     }
@@ -88,8 +89,24 @@ public class AuthService {
     }
 
     private UserAccount findActiveUser(String username) {
-        return userAccountRepository.findByUsernameAndStatus(username, ACTIVE_STATUS)
+        return findActiveUserOptional(username)
                 .orElseThrow(this::invalidCredentials);
+    }
+
+    private Optional<UserAccount> findActiveUserOptional(String username) {
+        LambdaQueryWrapper<UserAccount> query = Wrappers.<UserAccount>lambdaQuery()
+                .eq(UserAccount::getUsername, username)
+                .eq(UserAccount::getStatus, ACTIVE_STATUS)
+                .last("LIMIT 1");
+        return Optional.ofNullable(userAccountMapper.selectOne(query));
+    }
+
+    private Optional<TeamMember> findFirstMembership(Long userId) {
+        LambdaQueryWrapper<TeamMember> query = Wrappers.<TeamMember>lambdaQuery()
+                .eq(TeamMember::getUserId, userId)
+                .orderByAsc(TeamMember::getId)
+                .last("LIMIT 1");
+        return Optional.ofNullable(teamMemberMapper.selectOne(query));
     }
 
     private ResponseStatusException invalidCredentials() {

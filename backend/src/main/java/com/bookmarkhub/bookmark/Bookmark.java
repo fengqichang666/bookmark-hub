@@ -1,43 +1,36 @@
 package com.bookmarkhub.bookmark;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "bookmark")
+@TableName("bookmark")
 public class Bookmark {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    @Column(name = "team_id", nullable = false)
+    @TableField("team_id")
     private Long teamId;
 
-    @Column(name = "category_id", nullable = false)
+    @TableField("category_id")
     private Long categoryId;
 
-    @Column(nullable = false, length = 200)
     private String title;
 
-    @Column(nullable = false, length = 1000)
     private String url;
 
-    @Column(length = 1000)
     private String description;
 
-    @Column(name = "created_by", nullable = false)
+    @TableField("created_by")
     private Long createdBy;
 
-    @Column(name = "created_at", nullable = false)
+    @TableField("created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @TableField("updated_at")
     private LocalDateTime updatedAt;
 
     public Bookmark() {

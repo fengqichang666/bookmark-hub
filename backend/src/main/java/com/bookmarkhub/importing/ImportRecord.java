@@ -1,43 +1,38 @@
 package com.bookmarkhub.importing;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "import_record")
+@TableName("import_record")
 public class ImportRecord {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
-    @Column(name = "team_id", nullable = false)
+    @TableField("team_id")
     private Long teamId;
 
-    @Column(name = "operator_user_id", nullable = false)
+    @TableField("operator_user_id")
     private Long operatorUserId;
 
-    @Column(name = "file_name", nullable = false, length = 255)
+    @TableField("file_name")
     private String fileName;
 
-    @Column(name = "total_count", nullable = false)
+    @TableField("total_count")
     private Integer totalCount;
 
-    @Column(name = "success_count", nullable = false)
+    @TableField("success_count")
     private Integer successCount;
 
-    @Column(name = "failed_count", nullable = false)
+    @TableField("failed_count")
     private Integer failedCount;
 
-    @Column(nullable = false, length = 20)
     private String status;
 
-    @Column(name = "created_at", nullable = false)
+    @TableField("created_at")
     private LocalDateTime createdAt;
 
     protected ImportRecord() {

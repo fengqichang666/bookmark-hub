@@ -1,25 +1,28 @@
 package com.bookmarkhub.importing;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.bookmarkhub.auth.AuthActor;
 import com.bookmarkhub.auth.AuthService;
 import com.bookmarkhub.bookmark.Bookmark;
-import com.bookmarkhub.bookmark.BookmarkRepository;
+import com.bookmarkhub.bookmark.BookmarkMapper;
 import com.bookmarkhub.category.Category;
-import com.bookmarkhub.category.CategoryRepository;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import com.bookmarkhub.category.CategoryMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -29,20 +32,20 @@ public class ImportService {
     private static final String IMPORT_SUCCESS = "SUCCESS";
 
     private final AuthService authService;
-    private final CategoryRepository categoryRepository;
-    private final BookmarkRepository bookmarkRepository;
-    private final ImportRecordRepository importRecordRepository;
+    private final CategoryMapper categoryMapper;
+    private final BookmarkMapper bookmarkMapper;
+    private final ImportRecordMapper importRecordMapper;
 
     public ImportService(
             AuthService authService,
-            CategoryRepository categoryRepository,
-            BookmarkRepository bookmarkRepository,
-            ImportRecordRepository importRecordRepository
+            CategoryMapper categoryMapper,
+            BookmarkMapper bookmarkMapper,
+            ImportRecordMapper importRecordMapper
     ) {
         this.authService = authService;
-        this.categoryRepository = categoryRepository;
-        this.bookmarkRepository = bookmarkRepository;
-        this.importRecordRepository = importRecordRepository;
+        this.categoryMapper = categoryMapper;
+        this.bookmarkMapper = bookmarkMapper;
+        this.importRecordMapper = importRecordMapper;
     }
 
     public ImportPreviewResponse parse(String username, MultipartFile file) {
@@ -50,9 +53,13 @@ public class ImportService {
         return new ImportPreviewResponse(file.getOriginalFilename(), parseItems(file));
     }
 
+    @Transactional
     public ImportResultResponse confirm(String username, @Valid ConfirmImportRequest request) {
         AuthActor actor = authService.requireActor(username);
-        Category category = categoryRepository.findByIdAndTeamId(request.categoryId(), actor.teamId())
+        Category category = Optional.ofNullable(categoryMapper.selectOne(Wrappers.<Category>lambdaQuery()
+                        .eq(Category::getId, request.categoryId())
+                        .eq(Category::getTeamId, actor.teamId())
+                        .last("LIMIT 1")))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
 
         for (ImportPreviewItem item : request.items()) {
@@ -65,7 +72,7 @@ public class ImportService {
             bookmark.setCreatedBy(actor.userId());
             bookmark.setCreatedAt(LocalDateTime.now());
             bookmark.setUpdatedAt(LocalDateTime.now());
-            bookmarkRepository.save(bookmark);
+            bookmarkMapper.insert(bookmark);
         }
 
         ImportRecord record = new ImportRecord();
@@ -77,7 +84,7 @@ public class ImportService {
         record.setFailedCount(0);
         record.setStatus(IMPORT_SUCCESS);
         record.setCreatedAt(LocalDateTime.now());
-        importRecordRepository.save(record);
+        importRecordMapper.insert(record);
 
         return new ImportResultResponse(request.items().size(), request.items().size(), 0);
     }

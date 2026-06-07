@@ -1,0 +1,6 @@
+package com.bookmarkhub.auth;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+public interface TeamMemberMapper extends BaseMapper<TeamMember> {
+}

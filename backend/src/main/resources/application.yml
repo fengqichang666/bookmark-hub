@@ -2,23 +2,36 @@ server:
   port: 8080
 
 spring:
+  profiles:
+    default: dev
   datasource:
-    url: ${DB_URL:jdbc:h2:file:./data/bookmark_hub;MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE}
+    url: ${DB_URL:jdbc:h2:file:../data/bookmark_hub;MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE}
     username: ${DB_USERNAME:sa}
     password: ${DB_PASSWORD:}
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        format_sql: true
   flyway:
     enabled: true
   h2:
     console:
       enabled: true
 
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+
+springdoc:
+  api-docs:
+    enabled: ${app.docs.enabled:false}
+  swagger-ui:
+    enabled: ${app.docs.enabled:false}
+
+knife4j:
+  enable: ${app.docs.enabled:false}
+
 app:
   jwt:
     secret: ${JWT_SECRET:bookmark-hub-dev-secret-bookmark-hub-dev-secret}
     expiration: ${JWT_EXPIRATION:PT12H}
+  docs:
+    enabled: false

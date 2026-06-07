@@ -3,7 +3,7 @@
 Bookmark Hub is a monorepo with:
 
 - `frontend`: React + Vite UI
-- `backend`: Spring Boot + Flyway + JPA API
+- `backend`: Spring Boot 2 + Flyway + MyBatis-Plus API
 
 ## Current Status
 
@@ -16,7 +16,7 @@ Bookmark Hub is a monorepo with:
 ## Prerequisites
 
 - Node.js 20+
-- Java 21
+- Java 17
 - MySQL 8 (optional, only when using the `mysql` profile)
 
 ## Local Development
@@ -26,7 +26,7 @@ Bookmark Hub is a monorepo with:
 The default startup now uses a local H2 file database, so no extra database setup is required:
 
 ```powershell
-$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot'
+$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-17'
 $env:Path="$env:JAVA_HOME\bin;$env:Path"
 
 Set-Location 'D:\workspace\bookmark-hub\backend'
@@ -34,6 +34,11 @@ Set-Location 'D:\workspace\bookmark-hub\backend'
 ```
 
 The backend runs on `http://localhost:8080`.
+
+When the `test` profile or `APP_DOCS_ENABLED=true` is enabled, Knife4j and OpenAPI docs are available at:
+
+- `http://localhost:8080/doc.html`
+- `http://localhost:8080/v3/api-docs`
 
 Flyway will automatically apply:
 
@@ -60,10 +65,11 @@ The MySQL profile defaults to:
 Set `DB_PASSWORD` before starting the backend with the `mysql` profile. Set `DB_USERNAME` too if your local username is not `root`.
 
 ```powershell
-$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot'
+$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-17'
 $env:Path="$env:JAVA_HOME\bin;$env:Path"
 $env:DB_USERNAME='root'
 $env:DB_PASSWORD='your-local-password'
+$env:APP_DOCS_ENABLED='true'
 
 Set-Location 'D:\workspace\bookmark-hub\backend'
 .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=mysql

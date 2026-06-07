@@ -1,6 +1,8 @@
 package com.bookmarkhub.importing;
 
-import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import javax.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/imports")
+@Tag(name = "Imports")
 public class ImportController {
 
     private final ImportService importService;
@@ -21,11 +24,13 @@ public class ImportController {
     }
 
     @PostMapping(path = "/parse", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Parse bookmark import file")
     public ImportPreviewResponse parse(@RequestPart("file") MultipartFile file, Authentication authentication) {
         return importService.parse(authentication.getName(), file);
     }
 
     @PostMapping("/confirm")
+    @Operation(summary = "Confirm bookmark import")
     public ImportResultResponse confirm(
             @Valid @RequestBody ConfirmImportRequest request,
             Authentication authentication

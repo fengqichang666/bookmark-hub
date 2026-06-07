@@ -1,38 +1,42 @@
 package com.bookmarkhub.dashboard;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.bookmarkhub.auth.AuthActor;
 import com.bookmarkhub.auth.AuthService;
-import com.bookmarkhub.auth.TeamMemberRepository;
-import com.bookmarkhub.bookmark.BookmarkRepository;
-import com.bookmarkhub.category.CategoryRepository;
+import com.bookmarkhub.auth.TeamMember;
+import com.bookmarkhub.auth.TeamMemberMapper;
+import com.bookmarkhub.bookmark.Bookmark;
+import com.bookmarkhub.bookmark.BookmarkMapper;
+import com.bookmarkhub.category.Category;
+import com.bookmarkhub.category.CategoryMapper;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DashboardService {
 
     private final AuthService authService;
-    private final BookmarkRepository bookmarkRepository;
-    private final CategoryRepository categoryRepository;
-    private final TeamMemberRepository teamMemberRepository;
+    private final BookmarkMapper bookmarkMapper;
+    private final CategoryMapper categoryMapper;
+    private final TeamMemberMapper teamMemberMapper;
 
     public DashboardService(
             AuthService authService,
-            BookmarkRepository bookmarkRepository,
-            CategoryRepository categoryRepository,
-            TeamMemberRepository teamMemberRepository
+            BookmarkMapper bookmarkMapper,
+            CategoryMapper categoryMapper,
+            TeamMemberMapper teamMemberMapper
     ) {
         this.authService = authService;
-        this.bookmarkRepository = bookmarkRepository;
-        this.categoryRepository = categoryRepository;
-        this.teamMemberRepository = teamMemberRepository;
+        this.bookmarkMapper = bookmarkMapper;
+        this.categoryMapper = categoryMapper;
+        this.teamMemberMapper = teamMemberMapper;
     }
 
     public DashboardOverviewResponse overview(String username) {
         AuthActor actor = authService.requireActor(username);
         return new DashboardOverviewResponse(
-                bookmarkRepository.countByTeamId(actor.teamId()),
-                categoryRepository.countByTeamId(actor.teamId()),
-                teamMemberRepository.countByTeamId(actor.teamId())
+                bookmarkMapper.selectCount(Wrappers.<Bookmark>lambdaQuery().eq(Bookmark::getTeamId, actor.teamId())),
+                categoryMapper.selectCount(Wrappers.<Category>lambdaQuery().eq(Category::getTeamId, actor.teamId())),
+                teamMemberMapper.selectCount(Wrappers.<TeamMember>lambdaQuery().eq(TeamMember::getTeamId, actor.teamId()))
         );
     }
 }

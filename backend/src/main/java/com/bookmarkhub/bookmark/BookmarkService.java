@@ -1,16 +1,19 @@
 package com.bookmarkhub.bookmark;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.bookmarkhub.auth.AuthActor;
 import com.bookmarkhub.auth.AuthService;
 import com.bookmarkhub.auth.UserAccount;
-import com.bookmarkhub.auth.UserAccountRepository;
+import com.bookmarkhub.auth.UserAccountMapper;
 import com.bookmarkhub.category.Category;
-import com.bookmarkhub.category.CategoryRepository;
+import com.bookmarkhub.category.CategoryMapper;
 import com.bookmarkhub.shared.PageResponse;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -19,26 +22,28 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class BookmarkService {
 
-    private final BookmarkRepository bookmarkRepository;
-    private final CategoryRepository categoryRepository;
-    private final UserAccountRepository userAccountRepository;
+    private final BookmarkMapper bookmarkMapper;
+    private final CategoryMapper categoryMapper;
+    private final UserAccountMapper userAccountMapper;
     private final AuthService authService;
 
     public BookmarkService(
-            BookmarkRepository bookmarkRepository,
-            CategoryRepository categoryRepository,
-            UserAccountRepository userAccountRepository,
+            BookmarkMapper bookmarkMapper,
+            CategoryMapper categoryMapper,
+            UserAccountMapper userAccountMapper,
             AuthService authService
     ) {
-        this.bookmarkRepository = bookmarkRepository;
-        this.categoryRepository = categoryRepository;
-        this.userAccountRepository = userAccountRepository;
+        this.bookmarkMapper = bookmarkMapper;
+        this.categoryMapper = categoryMapper;
+        this.userAccountMapper = userAccountMapper;
         this.authService = authService;
     }
 
     public PageResponse<BookmarkSummaryResponse> list(String username) {
         AuthActor actor = authService.requireActor(username);
-        List<BookmarkSummaryResponse> items = bookmarkRepository.findByTeamIdOrderByIdAsc(actor.teamId())
+        List<BookmarkSummaryResponse> items = bookmarkMapper.selectList(Wrappers.<Bookmark>lambdaQuery()
+                        .eq(Bookmark::getTeamId, actor.teamId())
+                        .orderByAsc(Bookmark::getId))
                 .stream()
                 .map(this::toSummary)
                 .toList();
@@ -47,7 +52,7 @@ public class BookmarkService {
 
     public BookmarkDetailResponse detail(String username, Long bookmarkId) {
         AuthActor actor = authService.requireActor(username);
-        Bookmark bookmark = bookmarkRepository.findByIdAndTeamId(bookmarkId, actor.teamId())
+        Bookmark bookmark = findByIdAndTeamId(bookmarkId, actor.teamId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bookmark not found"));
         return toDetail(bookmark);
     }
@@ -65,12 +70,13 @@ public class BookmarkService {
         bookmark.setCreatedBy(actor.userId());
         bookmark.setCreatedAt(LocalDateTime.now());
         bookmark.setUpdatedAt(LocalDateTime.now());
-        return toDetail(bookmarkRepository.save(bookmark));
+        bookmarkMapper.insert(bookmark);
+        return toDetail(bookmark);
     }
 
     public BookmarkDetailResponse update(String username, Long bookmarkId, SaveBookmarkRequest request) {
         AuthActor actor = authService.requireActor(username);
-        Bookmark bookmark = bookmarkRepository.findByIdAndTeamId(bookmarkId, actor.teamId())
+        Bookmark bookmark = findByIdAndTeamId(bookmarkId, actor.teamId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bookmark not found"));
         if (!actor.isAdmin() && !bookmark.getCreatedBy().equals(actor.userId())) {
             throw new AccessDeniedException("Only owner or admin can modify bookmark");
@@ -82,16 +88,17 @@ public class BookmarkService {
         bookmark.setUrl(request.url());
         bookmark.setDescription(request.description());
         bookmark.setUpdatedAt(LocalDateTime.now());
-        return toDetail(bookmarkRepository.save(bookmark));
+        bookmarkMapper.updateById(bookmark);
+        return toDetail(bookmark);
     }
 
     private Category requireCategory(Long teamId, Long categoryId) {
-        return categoryRepository.findByIdAndTeamId(categoryId, teamId)
+        return findCategoryByIdAndTeamId(categoryId, teamId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
     }
 
     private BookmarkSummaryResponse toSummary(Bookmark bookmark) {
-        UserAccount creator = userAccountRepository.findById(bookmark.getCreatedBy())
+        UserAccount creator = Optional.ofNullable(userAccountMapper.selectById(bookmark.getCreatedBy()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Creator not found"));
         return new BookmarkSummaryResponse(
                 bookmark.getId(),
@@ -102,7 +109,7 @@ public class BookmarkService {
     }
 
     private BookmarkDetailResponse toDetail(Bookmark bookmark) {
-        UserAccount creator = userAccountRepository.findById(bookmark.getCreatedBy())
+        UserAccount creator = Optional.ofNullable(userAccountMapper.selectById(bookmark.getCreatedBy()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Creator not found"));
         return new BookmarkDetailResponse(
                 bookmark.getId(),
@@ -112,6 +119,22 @@ public class BookmarkService {
                 bookmark.getCategoryId(),
                 creator.getDisplayName()
         );
+    }
+
+    private Optional<Bookmark> findByIdAndTeamId(Long bookmarkId, Long teamId) {
+        LambdaQueryWrapper<Bookmark> query = Wrappers.<Bookmark>lambdaQuery()
+                .eq(Bookmark::getId, bookmarkId)
+                .eq(Bookmark::getTeamId, teamId)
+                .last("LIMIT 1");
+        return Optional.ofNullable(bookmarkMapper.selectOne(query));
+    }
+
+    private Optional<Category> findCategoryByIdAndTeamId(Long categoryId, Long teamId) {
+        LambdaQueryWrapper<Category> query = Wrappers.<Category>lambdaQuery()
+                .eq(Category::getId, categoryId)
+                .eq(Category::getTeamId, teamId)
+                .last("LIMIT 1");
+        return Optional.ofNullable(categoryMapper.selectOne(query));
     }
 }
 

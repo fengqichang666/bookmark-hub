@@ -1,18 +1,21 @@
 package com.bookmarkhub.member;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.bookmarkhub.auth.AuthActor;
 import com.bookmarkhub.auth.AuthService;
 import com.bookmarkhub.auth.TeamMember;
-import com.bookmarkhub.auth.TeamMemberRepository;
+import com.bookmarkhub.auth.TeamMemberMapper;
 import com.bookmarkhub.auth.UserAccount;
-import com.bookmarkhub.auth.UserAccountRepository;
+import com.bookmarkhub.auth.UserAccountMapper;
 import com.bookmarkhub.shared.PageResponse;
-import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import javax.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -20,24 +23,26 @@ public class TeamMemberService {
 
     private static final String ACTIVE_STATUS = "ACTIVE";
 
-    private final TeamMemberRepository teamMemberRepository;
-    private final UserAccountRepository userAccountRepository;
+    private final TeamMemberMapper teamMemberMapper;
+    private final UserAccountMapper userAccountMapper;
     private final AuthService authService;
 
     public TeamMemberService(
-            TeamMemberRepository teamMemberRepository,
-            UserAccountRepository userAccountRepository,
+            TeamMemberMapper teamMemberMapper,
+            UserAccountMapper userAccountMapper,
             AuthService authService
     ) {
-        this.teamMemberRepository = teamMemberRepository;
-        this.userAccountRepository = userAccountRepository;
+        this.teamMemberMapper = teamMemberMapper;
+        this.userAccountMapper = userAccountMapper;
         this.authService = authService;
     }
 
+    @Transactional
     public TeamMemberResponse create(String username, CreateTeamMemberRequest request) {
         AuthActor actor = authService.requireActor(username);
         ensureAdmin(actor);
-        if (userAccountRepository.existsByUsername(request.username())) {
+        if (userAccountMapper.selectCount(Wrappers.<UserAccount>lambdaQuery()
+                .eq(UserAccount::getUsername, request.username())) > 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
 
@@ -49,23 +54,25 @@ public class TeamMemberService {
         user.setStatus(ACTIVE_STATUS);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
-        UserAccount savedUser = userAccountRepository.save(user);
+        userAccountMapper.insert(user);
 
         TeamMember member = new TeamMember();
         member.setTeamId(actor.teamId());
-        member.setUserId(savedUser.getId());
+        member.setUserId(user.getId());
         member.setRole(request.role());
         member.setJoinedAt(LocalDateTime.now());
-        TeamMember savedMember = teamMemberRepository.save(member);
-        return toResponse(savedMember, savedUser);
+        teamMemberMapper.insert(member);
+        return toResponse(member, user);
     }
 
     public PageResponse<TeamMemberResponse> list(String username) {
         AuthActor actor = authService.requireActor(username);
-        List<TeamMemberResponse> items = teamMemberRepository.findByTeamIdOrderByIdAsc(actor.teamId())
+        List<TeamMemberResponse> items = teamMemberMapper.selectList(Wrappers.<TeamMember>lambdaQuery()
+                        .eq(TeamMember::getTeamId, actor.teamId())
+                        .orderByAsc(TeamMember::getId))
                 .stream()
                 .map(member -> {
-                    UserAccount user = userAccountRepository.findById(member.getUserId())
+                    UserAccount user = Optional.ofNullable(userAccountMapper.selectById(member.getUserId()))
                             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
                     return toResponse(member, user);
                 })

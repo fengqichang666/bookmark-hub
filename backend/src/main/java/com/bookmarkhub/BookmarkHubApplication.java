@@ -1,9 +1,11 @@
 package com.bookmarkhub;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
+@MapperScan("com.bookmarkhub")
 public class BookmarkHubApplication {
 
 	public static void main(String[] args) {

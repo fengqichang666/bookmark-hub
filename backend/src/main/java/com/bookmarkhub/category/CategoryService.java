@@ -1,12 +1,13 @@
 package com.bookmarkhub.category;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.bookmarkhub.auth.AuthActor;
 import com.bookmarkhub.auth.AuthService;
 import com.bookmarkhub.shared.PageResponse;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import javax.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -15,11 +16,11 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class CategoryService {
 
-    private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
     private final AuthService authService;
 
-    public CategoryService(CategoryRepository categoryRepository, AuthService authService) {
-        this.categoryRepository = categoryRepository;
+    public CategoryService(CategoryMapper categoryMapper, AuthService authService) {
+        this.categoryMapper = categoryMapper;
         this.authService = authService;
     }
 
@@ -29,7 +30,7 @@ public class CategoryService {
             throw new AccessDeniedException("Only admin can create category");
         }
         if (request.parentId() != null) {
-            categoryRepository.findByIdAndTeamId(request.parentId(), actor.teamId())
+            findByIdAndTeamId(request.parentId(), actor.teamId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent category not found"));
         }
 
@@ -40,12 +41,15 @@ public class CategoryService {
         category.setCreatedBy(actor.userId());
         category.setCreatedAt(LocalDateTime.now());
         category.setUpdatedAt(LocalDateTime.now());
-        return toResponse(categoryRepository.save(category));
+        categoryMapper.insert(category);
+        return toResponse(category);
     }
 
     public PageResponse<CategoryResponse> list(String username) {
         AuthActor actor = authService.requireActor(username);
-        List<CategoryResponse> items = categoryRepository.findByTeamIdOrderByIdAsc(actor.teamId())
+        List<CategoryResponse> items = categoryMapper.selectList(Wrappers.<Category>lambdaQuery()
+                        .eq(Category::getTeamId, actor.teamId())
+                        .orderByAsc(Category::getId))
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -54,6 +58,13 @@ public class CategoryService {
 
     private CategoryResponse toResponse(Category category) {
         return new CategoryResponse(category.getId(), category.getName(), category.getParentId());
+    }
+
+    private Optional<Category> findByIdAndTeamId(Long categoryId, Long teamId) {
+        return Optional.ofNullable(categoryMapper.selectOne(Wrappers.<Category>lambdaQuery()
+                .eq(Category::getId, categoryId)
+                .eq(Category::getTeamId, teamId)
+                .last("LIMIT 1")));
     }
 }
 
