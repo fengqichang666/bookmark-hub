@@ -9,3 +9,11 @@ backend/data/
 .superpowers/
 *.log
 .env
+
+# 本地 H2 数据库文件（运行时生成，不入库）
+data/
+*.mv.db
+*.trace.db
+
+# 临时文件
+.tmp/
