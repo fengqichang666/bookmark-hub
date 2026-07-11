@@ -1,6 +1,6 @@
 package com.bookmarkhub.config;
 
-import com.bookmarkhub.auth.JwtAuthenticationFilter;
+import com.bookmarkhub.auth.filter.JwtAuthenticationFilter;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
