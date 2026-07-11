@@ -10,3 +10,8 @@ knife4j:
 app:
   docs:
     enabled: true
+
+logging:
+  level:
+    com.bookmarkhub: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG

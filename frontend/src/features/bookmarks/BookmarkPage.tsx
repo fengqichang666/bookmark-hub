@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button, Card, Form, Input, Modal, Select, Space, Table, Typography } from 'antd'
+import { Button, Card, Form, Input, Modal, Popconfirm, Select, Space, Table, Typography, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { httpClient, type PageResponse } from '../../api/http'
 
@@ -108,6 +108,19 @@ function BookmarkPage() {
     },
   })
 
+  const deleteBookmark = useMutation({
+    mutationFn: async (id: number) => {
+      await httpClient.delete(`/bookmarks/${id}`)
+    },
+    onSuccess: async () => {
+      message.success('删除成功')
+      await queryClient.invalidateQueries({ queryKey: ['bookmarks'] })
+    },
+    onError: () => {
+      message.error('删除失败')
+    },
+  })
+
   function openCreateModal() {
     setEditingBookmarkId(null)
     form.resetFields()
@@ -156,9 +169,23 @@ function BookmarkPage() {
             title: '操作',
             key: 'actions',
             render: (_, record) => (
-              <Button type="link" onClick={() => openEditModal(record.id)}>
-                编辑
-              </Button>
+              <Space size="small">
+                <Button type="link" onClick={() => openEditModal(record.id)}>
+                  编辑
+                </Button>
+                <Popconfirm
+                  title="确认删除该书签？"
+                  description="删除后无法恢复"
+                  okText="删除"
+                  cancelText="取消"
+                  okButtonProps={{ danger: true, loading: deleteBookmark.isPending }}
+                  onConfirm={() => deleteBookmark.mutate(record.id)}
+                >
+                  <Button type="link" danger>
+                    删除
+                  </Button>
+                </Popconfirm>
+              </Space>
             ),
           },
         ]}
