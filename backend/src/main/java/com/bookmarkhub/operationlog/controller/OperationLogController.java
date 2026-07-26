@@ -1,9 +1,9 @@
 package com.bookmarkhub.operationlog.controller;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bookmarkhub.operationlog.dto.OperationLogQuery;
 import com.bookmarkhub.operationlog.service.OperationLogService;
 import com.bookmarkhub.operationlog.vo.OperationLogVO;
+import com.bookmarkhub.shared.PageResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class OperationLogController {
 
     @GetMapping
     @Operation(summary = "分页查询书签操作日志")
-    public IPage<OperationLogVO> list(OperationLogQuery query, Authentication authentication) {
+    public PageResult<OperationLogVO> list(OperationLogQuery query, Authentication authentication) {
         return operationLogService.list(authentication.getName(), query);
     }
 }

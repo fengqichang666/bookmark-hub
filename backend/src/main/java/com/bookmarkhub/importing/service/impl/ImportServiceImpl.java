@@ -13,21 +13,19 @@ import com.bookmarkhub.importing.service.ImportRecordService;
 import com.bookmarkhub.importing.service.ImportService;
 import com.bookmarkhub.importing.vo.ImportPreviewVO;
 import com.bookmarkhub.importing.vo.ImportResultVO;
+import com.bookmarkhub.shared.BizException;
+import com.bookmarkhub.shared.ErrorCode;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -47,14 +45,13 @@ public class ImportServiceImpl implements ImportService {
     }
 
     @Override
-    @Transactional
-    public ImportResultVO confirm(String username, @Valid ConfirmImportRequest request) {
+    @Transactional(rollbackFor = Exception.class)
+    public ImportResultVO confirm(String username, ConfirmImportRequest request) {
         AuthActor actor = authService.requireActor(username);
         Category category = categoryService.findByIdAndTeamId(request.getCategoryId(), actor.teamId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+                .orElseThrow(() -> new BizException(ErrorCode.CATEGORY_NOT_FOUND));
 
         List<Bookmark> bookmarks = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
         for (ImportPreviewItem item : request.getItems()) {
             Bookmark bookmark = new Bookmark();
             bookmark.setTeamId(actor.teamId());
@@ -63,11 +60,9 @@ public class ImportServiceImpl implements ImportService {
             bookmark.setUrl(item.getUrl());
             bookmark.setDescription(item.getFolderPath());
             bookmark.setCreatedBy(actor.userId());
-            bookmark.setCreatedAt(now);
-            bookmark.setUpdatedAt(now);
             bookmarks.add(bookmark);
         }
-        bookmarkService.saveBatch(bookmarks);
+        bookmarkService.saveImported(bookmarks);
 
         ImportRecord record = new ImportRecord();
         record.setTeamId(actor.teamId());
@@ -77,7 +72,6 @@ public class ImportServiceImpl implements ImportService {
         record.setSuccessCount(request.getItems().size());
         record.setFailedCount(0);
         record.setStatus(IMPORT_SUCCESS);
-        record.setCreatedAt(now);
         importRecordService.save(record);
 
         return new ImportResultVO(request.getItems().size(), request.getItems().size(), 0);
@@ -90,7 +84,7 @@ public class ImportServiceImpl implements ImportService {
             collectBookmarks(document, new ArrayList<>(), items);
             return items;
         } catch (IOException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to read import file", exception);
+            throw new BizException(ErrorCode.IMPORT_FILE_UNREADABLE, exception);
         }
     }
 

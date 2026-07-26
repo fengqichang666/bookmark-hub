@@ -41,12 +41,12 @@ class BookmarkControllerTest extends ApiIntegrationTestSupport {
                                 {"title":"Spring","url":"https://spring.io","description":"docs","categoryId":1}
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Spring"));
+                .andExpect(jsonPath("$.data.title").value("Spring"));
 
         mockMvc.perform(get("/api/bookmarks")
                         .header("Authorization", bearerTokenFor("member1")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[*].title").isArray());
+                .andExpect(jsonPath("$.data.items[*].title").isArray());
     }
 
     @Test
@@ -54,9 +54,9 @@ class BookmarkControllerTest extends ApiIntegrationTestSupport {
         mockMvc.perform(get("/api/bookmarks/2")
                         .header("Authorization", bearerTokenFor("member1")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(2))
-                .andExpect(jsonPath("$.title").value("React"))
-                .andExpect(jsonPath("$.description").value("React description"))
-                .andExpect(jsonPath("$.categoryId").value(1));
+                .andExpect(jsonPath("$.data.id").value(2))
+                .andExpect(jsonPath("$.data.title").value("React"))
+                .andExpect(jsonPath("$.data.description").value("React description"))
+                .andExpect(jsonPath("$.data.categoryId").value(1));
     }
 }

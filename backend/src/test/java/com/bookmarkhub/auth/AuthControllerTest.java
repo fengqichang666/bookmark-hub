@@ -33,15 +33,15 @@ class AuthControllerTest {
                         }
                         """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").isString())
-                .andExpect(jsonPath("$.user.username").value("admin"))
+                .andExpect(jsonPath("$.data.token").isString())
+                .andExpect(jsonPath("$.data.user.username").value("admin"))
                 .andReturn();
 
-        String token = JsonTestUtils.readJson(loginResult.getResponse().getContentAsString(), "$.token");
+        String token = JsonTestUtils.readJson(loginResult.getResponse().getContentAsString(), "$.data.token");
 
         mockMvc.perform(get("/api/auth/me")
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("admin"));
+                .andExpect(jsonPath("$.data.username").value("admin"));
     }
 }

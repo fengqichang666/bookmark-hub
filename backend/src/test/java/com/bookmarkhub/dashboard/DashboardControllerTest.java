@@ -22,8 +22,8 @@ class DashboardControllerTest extends ApiIntegrationTestSupport {
         mockMvc.perform(get("/api/dashboard/overview")
                         .header("Authorization", bearerTokenFor("admin")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.bookmarkCount").value(1))
-                .andExpect(jsonPath("$.categoryCount").value(1))
-                .andExpect(jsonPath("$.memberCount").value(2));
+                .andExpect(jsonPath("$.data.bookmarkCount").value(1))
+                .andExpect(jsonPath("$.data.categoryCount").value(1))
+                .andExpect(jsonPath("$.data.memberCount").value(2));
     }
 }

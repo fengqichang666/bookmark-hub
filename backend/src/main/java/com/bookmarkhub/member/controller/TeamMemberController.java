@@ -7,6 +7,7 @@ import com.bookmarkhub.shared.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import javax.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/api/members", "/api/team-members"})
+@RequestMapping("/api/members")
 @Tag(name = "Members")
 public class TeamMemberController {
 
@@ -32,6 +33,7 @@ public class TeamMemberController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create team member")
     public TeamMemberVO create(
             @Valid @RequestBody CreateTeamMemberRequest request,

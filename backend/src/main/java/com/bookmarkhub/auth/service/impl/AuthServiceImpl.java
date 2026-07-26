@@ -1,5 +1,6 @@
 package com.bookmarkhub.auth.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.bookmarkhub.auth.dto.LoginRequest;
 import com.bookmarkhub.auth.entity.TeamMember;
 import com.bookmarkhub.auth.entity.UserAccount;
@@ -10,16 +11,15 @@ import com.bookmarkhub.auth.service.TeamMemberService;
 import com.bookmarkhub.auth.service.UserAccountService;
 import com.bookmarkhub.auth.vo.CurrentUserVO;
 import com.bookmarkhub.auth.vo.LoginVO;
+import com.bookmarkhub.shared.BizException;
+import com.bookmarkhub.shared.ErrorCode;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +27,7 @@ public class AuthServiceImpl implements AuthService {
 
     private static final String ACTIVE_STATUS = "ACTIVE";
 
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
     private final UserAccountService userAccountService;
     private final TeamMemberService teamMemberService;
     private final JwtTokenService jwtTokenService;
@@ -98,22 +98,23 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private Optional<UserAccount> findActiveUserOptional(String username) {
-        return userAccountService.lambdaQuery()
-                .eq(UserAccount::getUsername, username)
-                .eq(UserAccount::getStatus, ACTIVE_STATUS)
-                .last("LIMIT 1")
-                .oneOpt();
+        // username 有唯一约束，但用 getOne(w, false) 表达“取第一条”比拼 last("LIMIT 1") 更安全
+        return Optional.ofNullable(userAccountService.getOne(
+                Wrappers.<UserAccount>lambdaQuery()
+                        .eq(UserAccount::getUsername, username)
+                        .eq(UserAccount::getStatus, ACTIVE_STATUS),
+                false));
     }
 
     private Optional<TeamMember> findFirstMembership(Long userId) {
-        return teamMemberService.lambdaQuery()
-                .eq(TeamMember::getUserId, userId)
-                .orderByAsc(TeamMember::getId)
-                .last("LIMIT 1")
-                .oneOpt();
+        return Optional.ofNullable(teamMemberService.getOne(
+                Wrappers.<TeamMember>lambdaQuery()
+                        .eq(TeamMember::getUserId, userId)
+                        .orderByAsc(TeamMember::getId),
+                false));
     }
 
-    private ResponseStatusException invalidCredentials() {
-        return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+    private BizException invalidCredentials() {
+        return new BizException(ErrorCode.INVALID_CREDENTIALS);
     }
 }

@@ -40,9 +40,9 @@ class ImportControllerTest extends ApiIntegrationTestSupport {
                         .file(file)
                         .header("Authorization", bearerTokenFor("admin")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[0].title").value("React"))
-                .andExpect(jsonPath("$.items[0].url").value("https://react.dev"))
-                .andExpect(jsonPath("$.items[0].folderPath").value("开发"));
+                .andExpect(jsonPath("$.data.items[0].title").value("React"))
+                .andExpect(jsonPath("$.data.items[0].url").value("https://react.dev"))
+                .andExpect(jsonPath("$.data.items[0].folderPath").value("开发"));
     }
 
     @Test
@@ -61,9 +61,9 @@ class ImportControllerTest extends ApiIntegrationTestSupport {
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalCount").value(2))
-                .andExpect(jsonPath("$.successCount").value(2))
-                .andExpect(jsonPath("$.failedCount").value(0));
+                .andExpect(jsonPath("$.data.totalCount").value(2))
+                .andExpect(jsonPath("$.data.successCount").value(2))
+                .andExpect(jsonPath("$.data.failedCount").value(0));
 
         Integer bookmarkCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM bookmark", Integer.class);
         Integer importRecordCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM import_record", Integer.class);

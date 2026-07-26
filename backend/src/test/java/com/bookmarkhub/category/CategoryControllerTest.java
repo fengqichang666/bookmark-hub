@@ -37,11 +37,11 @@ class CategoryControllerTest extends ApiIntegrationTestSupport {
                                 {"name":"Frontend","parentId":null}
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Frontend"));
+                .andExpect(jsonPath("$.data.name").value("Frontend"));
 
         mockMvc.perform(get("/api/categories")
                         .header("Authorization", bearerTokenFor("admin")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[0].name").value("Frontend"));
+                .andExpect(jsonPath("$.data.items[0].name").value("Frontend"));
     }
 }

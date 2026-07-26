@@ -4,9 +4,7 @@ import com.bookmarkhub.auth.entity.TeamMember;
 import com.bookmarkhub.auth.service.AuthActor;
 import com.bookmarkhub.auth.service.AuthService;
 import com.bookmarkhub.auth.service.TeamMemberService;
-import com.bookmarkhub.bookmark.entity.Bookmark;
 import com.bookmarkhub.bookmark.service.BookmarkService;
-import com.bookmarkhub.category.entity.Category;
 import com.bookmarkhub.category.service.CategoryService;
 import com.bookmarkhub.dashboard.service.DashboardService;
 import com.bookmarkhub.dashboard.vo.DashboardOverviewVO;
@@ -25,12 +23,9 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public DashboardOverviewVO overview(String username) {
         AuthActor actor = authService.requireActor(username);
-        long bookmarkCount = bookmarkService.lambdaQuery()
-                .eq(Bookmark::getTeamId, actor.teamId())
-                .count();
-        long categoryCount = categoryService.lambdaQuery()
-                .eq(Category::getTeamId, actor.teamId())
-                .count();
+        long bookmarkCount = bookmarkService.countByTeamId(actor.teamId());
+        long categoryCount = categoryService.countByTeamId(actor.teamId());
+        // TeamMemberService 是纯 CRUD service，保留 IService 用法
         long memberCount = teamMemberService.lambdaQuery()
                 .eq(TeamMember::getTeamId, actor.teamId())
                 .count();

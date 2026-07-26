@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { http, HttpResponse } from 'msw'
-import { server } from '../../test/server'
+import { http } from 'msw'
+import { jsonResult, server } from '../../test/server'
 import BookmarkPage from './BookmarkPage'
 
 const categoryItems = [
@@ -33,12 +33,12 @@ describe('BookmarkPage', () => {
 
     server.use(
       http.get(/\/api\/bookmarks$/, async () =>
-        HttpResponse.json({
+        jsonResult({
           items: bookmarkItems,
         }),
       ),
       http.get(/\/api\/categories$/, async () =>
-        HttpResponse.json({
+        jsonResult({
           items: categoryItems,
         }),
       ),
@@ -52,7 +52,7 @@ describe('BookmarkPage', () => {
             creatorName: 'admin',
           },
         ]
-        return HttpResponse.json({ id: 2 }, { status: 201 })
+        return jsonResult({ id: 2 }, { status: 201 })
       }),
     )
 
@@ -91,17 +91,17 @@ describe('BookmarkPage', () => {
 
     server.use(
       http.get(/\/api\/bookmarks$/, async () =>
-        HttpResponse.json({
+        jsonResult({
           items: bookmarkItems,
         }),
       ),
       http.get(/\/api\/categories$/, async () =>
-        HttpResponse.json({
+        jsonResult({
           items: categoryItems,
         }),
       ),
       http.get(/\/api\/bookmarks\/1$/, async () =>
-        HttpResponse.json({
+        jsonResult({
           id: 1,
           title: 'React',
           url: 'https://react.dev',
@@ -120,7 +120,7 @@ describe('BookmarkPage', () => {
             creatorName: 'admin',
           },
         ]
-        return HttpResponse.json({ id: 1 })
+        return jsonResult({ id: 1 })
       }),
     )
 
@@ -154,7 +154,7 @@ describe('BookmarkPage', () => {
   it('shows bookmark rows from the API', async () => {
     server.use(
       http.get(/\/api\/bookmarks$/, async () =>
-        HttpResponse.json({
+        jsonResult({
           items: [
             {
               id: 1,

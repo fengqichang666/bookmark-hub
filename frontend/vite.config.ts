@@ -15,6 +15,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: './src/test/setup.ts',
+    // localStorageMock 必须排在 setup.ts 之前：setup.ts 会 import authStore，
+    // 而后者在模块加载时就读取 localStorage。
+    setupFiles: ['./src/test/localStorageMock.ts', './src/test/setup.ts'],
   },
 })

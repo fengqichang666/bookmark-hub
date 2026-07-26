@@ -1,10 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { http, HttpResponse } from 'msw'
+import { http } from 'msw'
 import { MemoryRouter } from 'react-router-dom'
 import App from '../../App'
 import { useAuthStore } from './authStore'
-import { server } from '../../test/server'
+import { jsonResult, server } from '../../test/server'
 import LoginPage from './LoginPage'
 
 describe('LoginPage', () => {
@@ -22,7 +22,7 @@ describe('LoginPage', () => {
   it('submits credentials and stores token on successful login', async () => {
     server.use(
       http.post(/\/api\/auth\/login$/, async () =>
-        HttpResponse.json({
+        jsonResult({
           token: 'jwt-token',
           user: {
             username: 'admin',
@@ -33,7 +33,7 @@ describe('LoginPage', () => {
         }),
       ),
       http.get(/\/api\/dashboard\/overview$/, async () =>
-        HttpResponse.json({
+        jsonResult({
           bookmarkCount: 12,
           categoryCount: 3,
           memberCount: 2,
@@ -60,7 +60,7 @@ describe('LoginPage', () => {
   it('clears the token and returns to the login page on logout', async () => {
     server.use(
       http.get(/\/api\/dashboard\/overview$/, async () =>
-        HttpResponse.json({
+        jsonResult({
           bookmarkCount: 12,
           categoryCount: 3,
           memberCount: 2,

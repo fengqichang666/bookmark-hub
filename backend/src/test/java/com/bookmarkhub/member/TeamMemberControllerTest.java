@@ -20,11 +20,11 @@ class TeamMemberControllerTest extends ApiIntegrationTestSupport {
                                 {"username":"member1","password":"Password@123","displayName":"Member One","role":"MEMBER"}
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("member1"));
+                .andExpect(jsonPath("$.data.username").value("member1"));
 
         mockMvc.perform(get("/api/members")
                         .header("Authorization", bearerTokenFor("admin")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[*].username").isArray());
+                .andExpect(jsonPath("$.data.items[*].username").isArray());
     }
 }

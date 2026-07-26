@@ -3,7 +3,6 @@ import { Button, Card, Form, Select, Table, Typography } from 'antd'
 import type { ChangeEvent } from 'react'
 import { useState } from 'react'
 import { httpClient, type PageResponse } from '../../api/http'
-import { TOKEN_STORAGE_KEY } from '../auth/authStore'
 
 type CategoryItem = {
   id: number
@@ -53,14 +52,9 @@ function ImportPage() {
     formData.append('file', file)
     setParsing(true)
     try {
-      const token = window.localStorage.getItem(TOKEN_STORAGE_KEY)
-      const response = await fetch('/api/imports/parse', {
-        method: 'POST',
-        body: formData,
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      })
-      const data = (await response.json()) as ImportPreviewResponse
-      setPreview(data)
+      // 走 httpClient 而不是裸 fetch：token 注入和 Result 拆包都由拦截器统一处理
+      const response = await httpClient.post<ImportPreviewResponse>('/imports/parse', formData)
+      setPreview(response.data)
       setResult(null)
     } finally {
       setParsing(false)

@@ -8,15 +8,14 @@ import com.bookmarkhub.category.entity.Category;
 import com.bookmarkhub.category.mapper.CategoryMapper;
 import com.bookmarkhub.category.service.CategoryService;
 import com.bookmarkhub.category.vo.CategoryVO;
+import com.bookmarkhub.shared.BizException;
+import com.bookmarkhub.shared.ErrorCode;
 import com.bookmarkhub.shared.PageResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,12 +26,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Override
     public CategoryVO create(String username, SaveCategoryRequest request) {
         AuthActor actor = authService.requireActor(username);
-        if (!actor.isAdmin()) {
-            throw new AccessDeniedException("Only admin can create category");
-        }
         if (request.getParentId() != null) {
             findByIdAndTeamId(request.getParentId(), actor.teamId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent category not found"));
+                    .orElseThrow(() -> new BizException(ErrorCode.CATEGORY_NOT_FOUND, "父分类不存在"));
         }
 
         Category category = new Category();
@@ -40,8 +36,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         category.setParentId(request.getParentId());
         category.setName(request.getName());
         category.setCreatedBy(actor.userId());
-        category.setCreatedAt(LocalDateTime.now());
-        category.setUpdatedAt(LocalDateTime.now());
         this.save(category);
         return toVO(category);
     }
@@ -61,11 +55,18 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Override
     public Optional<Category> findByIdAndTeamId(Long categoryId, Long teamId) {
-        return this.lambdaQuery()
+        // id 是主键，命中至多一行，无需再拼 last("LIMIT 1")
+        return Optional.ofNullable(this.lambdaQuery()
                 .eq(Category::getId, categoryId)
                 .eq(Category::getTeamId, teamId)
-                .last("LIMIT 1")
-                .oneOpt();
+                .one());
+    }
+
+    @Override
+    public long countByTeamId(Long teamId) {
+        return this.lambdaQuery()
+                .eq(Category::getTeamId, teamId)
+                .count();
     }
 
     private CategoryVO toVO(Category category) {

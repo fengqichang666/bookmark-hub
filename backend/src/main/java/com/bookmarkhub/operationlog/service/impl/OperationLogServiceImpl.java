@@ -13,7 +13,7 @@ import com.bookmarkhub.operationlog.enums.OperationAction;
 import com.bookmarkhub.operationlog.mapper.OperationLogMapper;
 import com.bookmarkhub.operationlog.service.OperationLogService;
 import com.bookmarkhub.operationlog.vo.OperationLogVO;
-import java.time.LocalDateTime;
+import com.bookmarkhub.shared.PageResult;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,12 +42,11 @@ public class OperationLogServiceImpl extends ServiceImpl<OperationLogMapper, Ope
         log.setCategoryName(category == null ? null : category.getName());
         log.setAction(action.name());
         log.setDetail(detail);
-        log.setCreatedAt(LocalDateTime.now());
         this.save(log);
     }
 
     @Override
-    public IPage<OperationLogVO> list(String username, OperationLogQuery query) {
+    public PageResult<OperationLogVO> list(String username, OperationLogQuery query) {
         AuthActor actor = authService.requireActor(username);
         Page<OperationLog> page = new Page<>(query.pageOrDefault(), query.sizeOrDefault());
         IPage<OperationLog> raw = this.lambdaQuery()
@@ -62,9 +61,8 @@ public class OperationLogServiceImpl extends ServiceImpl<OperationLogMapper, Ope
         List<OperationLogVO> items = raw.getRecords().stream()
                 .map(this::toVO)
                 .toList();
-        Page<OperationLogVO> result = new Page<>(raw.getCurrent(), raw.getSize(), raw.getTotal());
-        result.setRecords(items);
-        return result;
+        // 返回自有的 PageResult，不把 MyBatis-Plus 的 IPage 漏到 API 契约里
+        return new PageResult<>(items, raw.getTotal(), raw.getCurrent(), raw.getSize());
     }
 
     private OperationLogVO toVO(OperationLog log) {

@@ -1,13 +1,15 @@
 package com.bookmarkhub.category.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.bookmarkhub.category.dto.SaveCategoryRequest;
 import com.bookmarkhub.category.entity.Category;
 import com.bookmarkhub.category.vo.CategoryVO;
 import com.bookmarkhub.shared.PageResponse;
 import java.util.Optional;
 
-public interface CategoryService extends IService<Category> {
+/**
+ * 分类业务接口。不继承 IService，理由同 {@link com.bookmarkhub.bookmark.service.BookmarkService}。
+ */
+public interface CategoryService {
 
     CategoryVO create(String username, SaveCategoryRequest request);
 
@@ -15,4 +17,7 @@ public interface CategoryService extends IService<Category> {
 
     /** 跨模块使用：按 id + teamId 精确定位分类。 */
     Optional<Category> findByIdAndTeamId(Long categoryId, Long teamId);
+
+    /** 供 dashboard 统计团队分类数。 */
+    long countByTeamId(Long teamId);
 }
