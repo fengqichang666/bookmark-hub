@@ -1,5 +1,6 @@
 package com.bookmarkhub.auth.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -16,19 +17,17 @@ public class UserAccount {
 
     private String username;
 
-    @TableField("password_hash")
     private String passwordHash;
 
-    @TableField("display_name")
     private String displayName;
 
     private String email;
 
     private String status;
 
-    @TableField("created_at")
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-    @TableField("updated_at")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 }

@@ -1,6 +1,8 @@
 package com.bookmarkhub.operationlog.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
@@ -23,5 +25,7 @@ public class OperationLog {
     private String categoryName;
     private String action;
     private String detail;
+
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 }

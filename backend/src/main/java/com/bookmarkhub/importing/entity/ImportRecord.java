@@ -1,5 +1,6 @@
 package com.bookmarkhub.importing.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -14,26 +15,20 @@ public class ImportRecord {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    @TableField("team_id")
     private Long teamId;
 
-    @TableField("operator_user_id")
     private Long operatorUserId;
 
-    @TableField("file_name")
     private String fileName;
 
-    @TableField("total_count")
     private Integer totalCount;
 
-    @TableField("success_count")
     private Integer successCount;
 
-    @TableField("failed_count")
     private Integer failedCount;
 
     private String status;
 
-    @TableField("created_at")
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 }

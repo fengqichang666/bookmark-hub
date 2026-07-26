@@ -1,5 +1,6 @@
 package com.bookmarkhub.category.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -14,20 +15,17 @@ public class Category {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    @TableField("team_id")
     private Long teamId;
 
-    @TableField("parent_id")
     private Long parentId;
 
     private String name;
 
-    @TableField("created_by")
     private Long createdBy;
 
-    @TableField("created_at")
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-    @TableField("updated_at")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 }
