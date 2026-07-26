@@ -1,6 +1,6 @@
 package com.bookmarkhub;
 
-import com.bookmarkhub.auth.JwtTokenService;
+import com.bookmarkhub.auth.service.JwtTokenService;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
